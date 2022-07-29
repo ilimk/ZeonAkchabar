@@ -13,35 +13,30 @@ headersForAkchabar = {
 reqAkchabar = requests.get(AkchabarUrl, headers = headersForAkchabar)
 srcAkchabar = reqAkchabar.text
 
-
 soup = BeautifulSoup(srcAkchabar, 'lxml')
 
-all_rates = soup.find("div", {"id": "the-content"}) #Находим div у котого id = the_content
 
-all_rates_string =  all_rates.script.text
-rates_start_cuts = all_rates_string[all_rates_string.find("{"):] #Находим первый символ = {
-reversed_rates_start_cuts = rates_start_cuts[::-1] #переворачиваем его
-reversed_rates_end_cuts = reversed_rates_start_cuts[reversed_rates_start_cuts.find(";")+1:] #и у перевернутого текста находим первую смвол = ;
-dict_rate = eval(reversed_rates_end_cuts[::-1]) # и еще раз переворачиваем тем самым возвращая его в исходное положение и запускаем его в dict_rate
+all_rates = soup.find("table", {"class": "tablesorter table-hover hidden-xs"})
 
-del dict_rate['nbkr']
-list_rates = [['Bank_Name', 'USD_Buy', 'USD_Sell', 'EURO_Buy', 'EURO_sell', 'RUB_Buy', 'RUB_Sell', 'KZT_Buy', 'KZT_Sell']]
+tableAkchabar = []
 
-for i in dict_rate:
-    l = []
-    l.append(i)
-    for j in dict_rate[i].values():
-        for k in j:
-            l.append(k)
-    list_rates.append(l)
+headers = all_rates.find_all('th')
+data = all_rates.find_all('tr')
+for i in data:
+    tableAkchabar_local = []
+    for j in i:
+        if j.get('colspan'):
+            tableAkchabar_local.append(j.text)
+            tableAkchabar_local.append(j.text)
+        else:
+            tableAkchabar_local.append(j.text)
+    tableAkchabar.append(tableAkchabar_local)
 
 with open(str(datetime.datetime.now()) + ".csv", "w") as file:
     writer = csv.writer(file)
     writer.writerows(
-        list_rates
+        tableAkchabar
     )
-
-
 
 
 
